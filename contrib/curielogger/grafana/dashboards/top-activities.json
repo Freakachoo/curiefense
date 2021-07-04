@@ -997,8 +997,8 @@
     "list": []
   },
   "time": {
-    "from": "2021-07-01T08:21:23.151Z",
-    "to": "2021-07-01T09:21:23.151Z"
+    "from": "now-6h",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
