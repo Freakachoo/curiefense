@@ -414,5 +414,34 @@
       "tags": [
          "actionredirect"
       ]
+   },
+   {
+      "id": "49aea5a8d96b",
+      "name": "foo",
+      "source": "self-managed",
+      "mdate": "2021-07-01T09:50:58.505Z",
+      "notes": "Check action",
+      "active": true,
+      "action": {
+         "type": "default"
+      },
+      "tags": [
+         "tagbyip"
+      ],
+      "rule": {
+         "relation": "OR",
+         "sections": [
+            {
+               "relation": "OR",
+               "entries": [
+                  [
+                     "ip",
+                     "12.13.14.15",
+                     ""
+                  ]
+               ]
+            }
+         ]
+      }
    }
 ]

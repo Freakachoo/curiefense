@@ -47,9 +47,8 @@
                             :label="index === 0 ? 'Count by' : ''"
                             show-remove
                             @remove="removeKey(index)"
-                            @change="updateKeyOption"
+                            @change="updateKeyOption($event, index)"
                             :removable="localDoc.key.length > 1"
-                            :index="index"
                             :option="generateOption(option)"
                             :key="getOptionTextKey(option, index)"/>
               <a title="Add new option rule"
