@@ -297,6 +297,7 @@ class TestACL:
 
 def gen_rl_rules(authority):
     rl_rules = []
+    rl_profiles = []
     prof_rules = []
     map_path = {}
 
@@ -343,6 +344,7 @@ def gen_rl_rules(authority):
         path, action_ext=None, subaction_ext=None, param_ext=None, **kwargs
     ):
         rule_id = f"e2e1{len(rl_rules):0>9}"
+        rule_profile_id = f"{rule_id}_profile"
         incl_id = f"incl{len(rl_rules):0>9}"
         excl_id = f"excl{len(rl_rules):0>9}"
 
@@ -352,7 +354,7 @@ def gen_rl_rules(authority):
             action_ext = {}
         if param_ext is None:
             param_ext = {}
-        map_path[path] = rule_id
+        map_path[path] = rule_profile_id
         incl = build_profiling_rule(incl_id, incl_id, "incl", **kwargs)
         excl = build_profiling_rule(excl_id, excl_id, "excl", **kwargs)
         rl_rules.append(
@@ -378,6 +380,14 @@ def gen_rl_rules(authority):
                 "exclude": excl,
                 "key": kwargs.get("key", [{"attrs": "ip"}]),
                 "pairwith": kwargs.get("pairwith", {"self": "self"}),
+            }
+        )
+        rl_profiles.append(
+            {
+                "id": rule_profile_id,
+                "name": "Rate Limit Profile" + path,
+                "description": "",
+                "limit_ids": [rule_id],
             }
         )
 
@@ -559,7 +569,7 @@ def gen_rl_rules(authority):
                     "acl_active": True,
                     "waf_profile": "__default__",
                     "waf_active": True,
-                    "limit_ids": [],
+                    "limit_profile_ids": [],
                 }
             ]
             + [
@@ -570,13 +580,13 @@ def gen_rl_rules(authority):
                     "acl_active": True,
                     "waf_profile": "__default__",
                     "waf_active": True,
-                    "limit_ids": [v],
+                    "limit_profile_ids": [v],
                 }
                 for k, v in map_path.items()
             ],
         }
     ]
-    return (rl_rules, rl_securitypolicy, prof_rules)
+    return (rl_rules, rl_profiles, rl_securitypolicy, prof_rules)
 
 
 @pytest.fixture(scope="class")
@@ -584,8 +594,12 @@ def ratelimit_config(cli, target):
     cli.revert_and_enable()
     # Add new RL rules
     rl_rules = cli.call(f"doc get {TEST_CONFIG_NAME} ratelimits")
-    (new_rules, new_securitypolicy, new_profiling) = gen_rl_rules(target.authority())
+    rl_profiles = cli.call(f"doc get {TEST_CONFIG_NAME} ratelimitprofiles")
+    (new_rules, new_rl_profiles, new_securitypolicy, new_profiling) = gen_rl_rules(
+        target.authority()
+    )
     rl_rules.extend(new_rules)
+    rl_profiles.extend(new_rl_profiles)
     # Apply new profiling
     cli.call(
         f"doc update {TEST_CONFIG_NAME} globalfilters /dev/stdin",
@@ -593,6 +607,11 @@ def ratelimit_config(cli, target):
     )
     # Apply rl_rules
     cli.call(f"doc update {TEST_CONFIG_NAME} ratelimits /dev/stdin", inputjson=rl_rules)
+    # Apply rl_profiles
+    cli.call(
+        f"doc update {TEST_CONFIG_NAME} ratelimitprofiles /dev/stdin",
+        inputjson=rl_profiles,
+    )
     # Apply new_securitypolicy
     cli.call(
         f"doc update {TEST_CONFIG_NAME} securitypolicies /dev/stdin",
@@ -1288,7 +1307,7 @@ SECURITYPOLICY = [
                 "acl_active": True,
                 "waf_profile": "__default__",
                 "waf_active": False,
-                "limit_ids": [],
+                "limit_profile_ids": [],
                 "isnew": True,
             },
             {
@@ -1298,7 +1317,7 @@ SECURITYPOLICY = [
                 "acl_active": True,
                 "waf_profile": "__default__",
                 "waf_active": True,
-                "limit_ids": [],
+                "limit_profile_ids": [],
                 "isnew": True,
             },
             {
@@ -1308,7 +1327,7 @@ SECURITYPOLICY = [
                 "acl_active": True,
                 "waf_profile": "__default__",
                 "waf_active": True,
-                "limit_ids": [],
+                "limit_profile_ids": [],
                 "isnew": True,
             },
             {
@@ -1318,7 +1337,7 @@ SECURITYPOLICY = [
                 "acl_active": False,
                 "waf_profile": "__default__",
                 "waf_active": True,
-                "limit_ids": [],
+                "limit_profile_ids": [],
                 "isnew": True,
             },
             {
@@ -1328,7 +1347,7 @@ SECURITYPOLICY = [
                 "acl_active": False,
                 "waf_profile": "e2e000000002",
                 "waf_active": True,
-                "limit_ids": [],
+                "limit_profile_ids": [],
                 "isnew": True,
             },
             {
@@ -1338,7 +1357,7 @@ SECURITYPOLICY = [
                 "acl_active": False,
                 "waf_profile": "__default__",
                 "waf_active": False,
-                "limit_ids": [],
+                "limit_profile_ids": [],
             },
         ],
     }

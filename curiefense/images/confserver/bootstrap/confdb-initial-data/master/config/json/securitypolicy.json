@@ -11,7 +11,7 @@
                 "waf_profile": "__default__",
                 "acl_active": false,
                 "waf_active": false,
-                "limit_ids": []
+                "limit_profile_ids": []
             }
         ]
     }

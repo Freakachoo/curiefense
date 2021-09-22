@@ -36,8 +36,7 @@ class AnyType(fields.Raw):
     __schema_type__ = "any"
 
 
-# limit
-
+# rate limit
 
 m_limit = api.model(
     "Rate Limit",
@@ -48,13 +47,22 @@ m_limit = api.model(
         "ttl": fields.String(required=True),
         "limit": fields.String(required=True),
         "action": fields.Raw(required=True),
-        "include": fields.Raw(required=True),
-        "exclude": fields.Raw(required=True),
+        "include": fields.List(fields.String(), required=True),
+        "exclude": fields.List(fields.String(), required=True),
         "key": AnyType(required=True),
         "pairwith": fields.Raw(required=True),
     },
 )
 
+m_limitprofile = api.model(
+    "Rate Limit Profile",
+    {
+        "id": fields.String(required=True),
+        "name": fields.String(required=True),
+        "description": fields.String(required=False),
+        "limit_ids": fields.List(fields.String()),
+    },
+)
 
 # securitypolicy
 
@@ -67,7 +75,7 @@ m_secprofilemap = api.model(
         "acl_active": fields.Boolean(required=True),
         "waf_profile": fields.String(required=True),
         "waf_active": fields.Boolean(required=True),
-        "limit_ids": fields.List(fields.Raw()),
+        "limit_profile_ids": fields.List(fields.String(), default=[]),
     },
 )
 
@@ -178,6 +186,7 @@ m_flowcontrol = api.model(
 
 models = {
     "ratelimits": m_limit,
+    "ratelimitprofiles": m_limitprofile,
     "securitypolicies": m_securitypolicy,
     "wafrules": m_wafrule,
     "wafpolicies": m_wafpolicy,
@@ -331,6 +340,9 @@ with open(acl_profile_file_path) as json_file:
 ratelimits_file_path = (base_path / "../json/rate-limits.schema").resolve()
 with open(ratelimits_file_path) as json_file:
     ratelimits_schema = json.load(json_file)
+ratelimitprofile_file_path = (base_path / "./json/rate-limit-profile.schema").resolve()
+with open(ratelimitprofile_file_path) as json_file:
+    ratelimitprofile_schema = json.load(json_file)
 securitypolicies_file_path = (base_path / "./json/security-policies.schema").resolve()
 with open(securitypolicies_file_path) as json_file:
     securitypolicies_schema = json.load(json_file)
@@ -349,6 +361,7 @@ with open(waf_rule_file_path) as json_file:
 
 schema_type_map = {
     "ratelimits": ratelimits_schema,
+    "ratelimitprofiles": ratelimitprofile_schema,
     "securitypolicies": securitypolicies_schema,
     "wafpolicies": waf_policy_schema,
     "aclprofiles": acl_profile_schema,

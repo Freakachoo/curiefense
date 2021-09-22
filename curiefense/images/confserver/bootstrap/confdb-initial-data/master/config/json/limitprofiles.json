@@ -1,0 +1,8 @@
+[
+    {
+        "id": "f971e9356af3",
+        "name": "New Rate Limit Profile",
+        "description": "New Rate Limit Profile",
+        "limit_ids": ["f971e92459e2"]
+    }
+]

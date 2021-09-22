@@ -17,6 +17,13 @@ vec_limit = {
     "pairwith": {"self": "self"},
 }
 
+vec_limitprofile = {
+    "id": "f971e9356af3",
+    "name": "New Rate Limit Profile",
+    "description": "New Rate Limit Profile",
+    "limit_ids": ["f971e92459e2"],
+}
+
 
 vec_securitypolicy = {
     "id": "__default__",
@@ -24,7 +31,7 @@ vec_securitypolicy = {
     "match": "__default__",
     "map": [
         {
-            "limit_ids": [],
+            "limit_profile_ids": ["f971e9356af3"],
             "waf_active": True,
             "acl_active": True,
             "waf_profile": "__default__",
@@ -155,6 +162,7 @@ vec_geolite2country = {"format": "base64", "blob": "AAAABBBB"}
 
 vec_documents = {
     "ratelimits": vec_limit,
+    "ratelimitprofiles": vec_limitprofile,
     "securitypolicies": vec_securitypolicy,
     "wafrules": vec_wafrule,
     "wafpolicies": vec_wafpolicy,

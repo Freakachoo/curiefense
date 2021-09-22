@@ -67,7 +67,7 @@ m_secprofilemap = api.model(
         "acl_active": fields.Boolean(required=True),
         "waf_profile": fields.String(required=True),
         "waf_active": fields.Boolean(required=True),
-        "limit_ids": fields.List(fields.Raw()),
+        "limit_ids": fields.List(fields.String(), default=[]),
     },
 )
 
@@ -522,6 +522,12 @@ class DocumentResource(Resource):
         if document not in models:
             abort(404, "document does not exist")
         res = current_app.backend.documents_get(config, utils.vconvert(document, "v1"))
+        res = [
+            utils.vconfigconvert(
+                ctype=document, doc=confdoc, vto="v1", params={"config": config}
+            )
+            for confdoc in res
+        ]
         return marshal(res, models[document], skip_none=True)
 
     def post(self, config, document):
@@ -529,8 +535,14 @@ class DocumentResource(Resource):
         if document not in models:
             abort(404, "document does not exist")
         data = marshal(request.json, models[document], skip_none=True)
+        res = utils.vconfigconvert(
+            ctype=document, doc=data, vfrom="v1", params={"config": config}
+        )
         res = current_app.backend.documents_create(
             config, utils.vconvert(document, "v1"), data
+        )
+        res = utils.vconfigconvert(
+            ctype=document, doc=data, vto="v1", params={"config": config}
         )
         return res
 
@@ -539,6 +551,9 @@ class DocumentResource(Resource):
         if document not in models:
             abort(404, "document does not exist")
         data = marshal(request.json, models[document], skip_none=True)
+        res = utils.vconfigconvert(
+            ctype=document, doc=data, vfrom="v1", params={"config": config}
+        )
         res = current_app.backend.documents_update(
             config, utils.vconvert(document, "v1"), data
         )
@@ -548,9 +563,15 @@ class DocumentResource(Resource):
         "Delete/empty a document"
         if document not in models:
             abort(404, "document does not exist")
-        res = current_app.backend.documents_delete(
-            config, utils.vconvert(document, "v1")
-        )
+
+        config_type = utils.vconvert(document, "v1")
+        # Clean up autocreated Rate Limit Profiles embedded into Url Maps
+        if document == "urlmaps":
+            urlmap_ids = current_app.backend.entries_list(config, config_type)
+            for id in urlmap_ids:
+                utils.delete_embedded_rl_profiles(config, id)
+
+        res = current_app.backend.documents_delete(config, config_type)
         return res
 
 
@@ -574,6 +595,9 @@ class DocumentVersionResource(Resource):
             abort(404, "document does not exist")
         res = current_app.backend.documents_get(
             config, utils.vconvert(document, "v1"), version
+        )
+        res = utils.vconfigconvert(
+            ctype=document, doc=res, vto="v1", params={"config": config}
         )
         return marshal(res, models[document], skip_none=True)
 
@@ -621,6 +645,9 @@ class EntryResource(Resource):
         res = current_app.backend.entries_get(
             config, utils.vconvert(document, "v1"), entry
         )
+        res = utils.vconfigconvert(
+            ctype=document, doc=res, vto="v1", params={"config": config}
+        )
         return marshal(res, models[document], skip_none=True)
 
     def put(self, config, document, entry):
@@ -630,6 +657,9 @@ class EntryResource(Resource):
         isValid = validateJson(request.json, document)
         if isValid:
             data = marshal(request.json, models[document], skip_none=True)
+            data = utils.vconfigconvert(
+                ctype=document, doc=data, vfrom="v1", params={"config": config}
+            )
             res = current_app.backend.entries_update(
                 config, utils.vconvert(document, "v1"), entry, data
             )
@@ -641,9 +671,13 @@ class EntryResource(Resource):
         "Delete an entry from a document"
         if document not in models:
             abort(404, "document does not exist")
-        res = current_app.backend.entries_delete(
-            config, utils.vconvert(document, "v1"), entry
-        )
+
+        config_type = utils.vconvert(document, "v1")
+        # Clean up autocreated Rate Limit Profiles embedded into the Url Map
+        if document == "urlmaps":
+            utils.delete_embedded_rl_profiles(config, entry)
+
+        res = current_app.backend.entries_delete(config, config_type, entry)
         return res
 
 
@@ -656,6 +690,9 @@ class EntryEditResource(Resource):
         data = marshal(request.json, m_edit, skip_none=True)
         if type(data) is not list:
             data = [data]
+        data = utils.vconfigconvert(
+            ctype=document, doc=data, vfrom="v1", params={"config": config}
+        )
         res = current_app.backend.entries_edit(
             config, utils.vconvert(document, "v1"), entry, data
         )

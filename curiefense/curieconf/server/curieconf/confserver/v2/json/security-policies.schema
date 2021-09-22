@@ -57,19 +57,21 @@
                         "title": "ACL Active",
                         "description": "When true, Security Policy entry will use the given ACL profile"
                     },
-                    "limit_ids": {
+                    "limit_profile_ids": {
                         "type": "array",
-                        "title": "Rate Limits IDs List",
-                        "description": "A list containing IDs of rate limits to be used by this Security Policy entry",
+                        "title": "Rate Limit Profiles IDs List",
+                        "description": "A list containing IDs of rate limit profiles to be used by this Security Policy entry",
                         "items": {
-                            "title": "Rate Limits IDs List Entry",
-                            "description": "A single rate limit ID",
+                            "title": "Rate Limit Profiles IDs List Entry",
+                            "description": "A single rate limit profile ID",
                             "type": "string"
                         }
                     }
-                }
+                },
+                "additionalProperties": false
             }
         }
     },
+    "additionalProperties": false,
     "required": [ "id", "match", "map", "name" ]
 }

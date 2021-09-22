@@ -47,6 +47,14 @@
                 }
             }
         ],
+        "ratelimitprofiles": [
+            {
+                "id": "f971e9356af3",
+                "name": "New Rate Limit Profile",
+                "description": "New Rate Limit Profile",
+                "limit_ids": ["f971e92459e2", "739ae4cf811d"]
+            }
+        ],
         "securitypolicies": [
             {
                 "id": "__default__",
@@ -54,7 +62,7 @@
                 "match": "__default__",
                 "map": [
                     {
-                        "limit_ids": [],
+                        "limit_profile_ids": ["f971e9356af3"],
                         "waf_active": true,
                         "acl_active": true,
                         "waf_profile": "__default__",
@@ -70,7 +78,7 @@
                 "match": "active.envoy.demo.reblaze.io",
                 "map": [
                     {
-                        "limit_ids": [],
+                        "limit_profile_ids": ["f971e9356af3"],
                         "waf_active": true,
                         "acl_active": true,
                         "waf_profile": "__default__",
@@ -79,7 +87,7 @@
                         "match": "/deny-custom-sig"
                     },
                     {
-                        "limit_ids": [],
+                        "limit_profile_ids": ["f971e9356af3"],
                         "waf_active": true,
                         "acl_active": true,
                         "waf_profile": "__default__",
@@ -88,7 +96,7 @@
                         "match": "/allow-custom-sig"
                     },
                     {
-                        "limit_ids": [],
+                        "limit_profile_ids": ["f971e9356af3"],
                         "waf_active": true,
                         "acl_active": true,
                         "waf_profile": "__default__",
@@ -97,7 +105,7 @@
                         "match": "/admin"
                     },
                     {
-                        "limit_ids": [],
+                        "limit_profile_ids": ["f971e9356af3"],
                         "waf_active": true,
                         "acl_active": true,
                         "acl_profile": "__default__",
@@ -113,7 +121,7 @@
                 "match": "monitor.envoy.demo.reblaze.io",
                 "map": [
                     {
-                        "limit_ids": [],
+                        "limit_profile_ids": ["f971e9356af3"],
                         "waf_active": true,
                         "acl_active": true,
                         "waf_profile": "__default__",
@@ -122,7 +130,7 @@
                         "match": "/"
                     },
                     {
-                        "limit_ids": [],
+                        "limit_profile_ids": ["f971e9356af3"],
                         "waf_active": true,
                         "acl_active": true,
                         "waf_profile": "__default__",

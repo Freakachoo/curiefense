@@ -1,0 +1,35 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Rate Limit Profile",
+    "description": "Rate Limit Profile with embedded rules",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique id"
+        },
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name",
+            "description": "Name of entity shown in UI"
+        },
+        "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Description of entity shown in UI"
+        },
+        "limit_ids": {
+            "type": "array",
+            "title": "Rate Limits IDs List",
+            "description": "A list containing IDs of rate limits to be used by this Security Policy entry",
+            "items": {
+                "title": "Rate Limits IDs List Entry",
+                "description": "A single rate limit ID",
+                "type": "string"
+            }
+        }
+    },
+    "required": [ "id", "name" ]
+}
