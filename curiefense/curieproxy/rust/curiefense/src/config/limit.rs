@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use crate::config::raw::{RawLimit, RawLimitSelector};
+use crate::config::raw::{RawLimit, RawLimitProfile, RawLimitSelector};
 use crate::config::utils::{
     decode_request_selector_condition, resolve_selector_raw, RequestSelector, RequestSelectorCondition, SelectorType,
 };
@@ -21,6 +21,13 @@ pub struct Limit {
     pub include: HashSet<String>,
     pub pairwith: Option<RequestSelector>,
     pub key: Vec<RequestSelector>,
+}
+
+#[derive(Debug, Clone)]
+pub struct LimitProfile {
+    pub id: String,
+    pub name: String,
+    pub limit_ids: Vec<String>,
 }
 
 pub fn resolve_selector_map(sel: HashMap<String, String>) -> anyhow::Result<RequestSelector> {
@@ -72,6 +79,32 @@ impl Limit {
                     out.insert(nm, lm);
                 }
                 Err(rr) => logs.error(format!("limit id {}: {:?}", curid, rr)),
+            }
+        }
+        out
+    }
+}
+
+impl LimitProfile {
+    fn convert(rawlimitprofile: RawLimitProfile) -> anyhow::Result<(String, LimitProfile)> {
+        Ok((
+            rawlimitprofile.id.clone(),
+            LimitProfile {
+                id: rawlimitprofile.id,
+                name: rawlimitprofile.name,
+                limit_ids: rawlimitprofile.limit_ids,
+            },
+        ))
+    }
+    pub fn resolve(logs: &mut Logs, rawlimitprofiles: Vec<RawLimitProfile>) -> HashMap<String, LimitProfile> {
+        let mut out = HashMap::new();
+        for rlp in rawlimitprofiles {
+            let curid = rlp.id.clone();
+            match LimitProfile::convert(rlp) {
+                Ok((nm, lmp)) => {
+                    out.insert(nm, lmp);
+                }
+                Err(rr) => logs.error(format!("limit profile id {}: {:?}", curid, rr)),
             }
         }
         out

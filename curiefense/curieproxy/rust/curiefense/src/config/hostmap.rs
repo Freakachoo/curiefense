@@ -1,4 +1,4 @@
-use crate::config::limit::Limit;
+use crate::config::limit::{Limit, LimitProfile};
 use crate::config::raw::AclProfile;
 use crate::config::utils::Matching;
 use crate::config::waf::WafProfile;
@@ -21,4 +21,5 @@ pub struct SecurityPolicy {
     pub waf_active: bool,
     pub waf_profile: WafProfile,
     pub limits: Vec<Limit>,
+    pub limit_profiles: Vec<LimitProfile>,
 }

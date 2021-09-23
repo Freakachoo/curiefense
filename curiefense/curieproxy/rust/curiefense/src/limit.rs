@@ -140,7 +140,6 @@ pub fn limit_check(
 
         if is_banned(&mut redis, &key) {
             logs.debug("is banned!");
-            tags.insert(&limit.name);
             return limit_react(logs, tags, &mut redis, limit, key);
         }
 

@@ -25,7 +25,7 @@ pub struct RawSecurityPolicy {
     pub waf_profile: String,
     pub acl_active: bool,
     pub waf_active: bool,
-    pub limit_ids: Vec<String>,
+    pub limit_profile_ids: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
@@ -128,6 +128,13 @@ pub struct RawLimit {
     pub exclude: Vec<String>,
     pub pairwith: HashMap<String, String>,
     pub action: RawAction,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct RawLimitProfile {
+    pub id: String,
+    pub name: String,
+    pub limit_ids: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

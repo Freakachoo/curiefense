@@ -11,7 +11,7 @@
                 "waf_profile": "__default__",
                 "acl_active": true,
                 "waf_active": false,
-                "limit_ids": []
+                "limit_profile_ids": []
             },
             {
                 "match": "^/waf/noinjection",
@@ -20,7 +20,7 @@
                 "waf_profile": "noinject",
                 "acl_active": true,
                 "waf_active": true,
-                "limit_ids": []
+                "limit_profile_ids": []
             },
             {
                 "match": "^/waf/omitted",
@@ -29,7 +29,7 @@
                 "waf_profile": "omitted",
                 "acl_active": true,
                 "waf_active": true,
-                "limit_ids": []
+                "limit_profile_ids": []
             },
             {
                 "match": "^/waf/args",
@@ -38,7 +38,7 @@
                 "waf_profile": "argschecks",
                 "acl_active": true,
                 "waf_active": true,
-                "limit_ids": []
+                "limit_profile_ids": []
             },
             {
                 "match": "^/limits/simple",
@@ -47,9 +47,7 @@
                 "waf_profile": "__default__",
                 "acl_active": true,
                 "waf_active": true,
-                "limit_ids": [
-                    "limitsimple"
-                ]
+                "limit_profile_ids": ["limitsimpleprofile"]
             },
             {
                 "match": "^/limits/country",
@@ -58,9 +56,7 @@
                 "waf_profile": "__default__",
                 "acl_active": true,
                 "waf_active": true,
-                "limit_ids": [
-                    "limitcountry"
-                ]
+                "limit_profile_ids": ["limitcountryprofile"]
             },
             {
                 "match": "^/limits/include",
@@ -69,9 +65,7 @@
                 "waf_profile": "__default__",
                 "acl_active": true,
                 "waf_active": true,
-                "limit_ids": [
-                    "limitinclude"
-                ]
+                "limit_profile_ids": ["limitincludeprofile"]
             },
             {
                 "match": "^/limits/method",
@@ -80,9 +74,7 @@
                 "waf_profile": "__default__",
                 "acl_active": true,
                 "waf_active": true,
-                "limit_ids": [
-                    "4d1d9d405fc9"
-                ]
+                "limit_profile_ids": ["4d1d9d405fc9profile"]
             },
             {
                 "match": "^/limits/exclude",
@@ -91,9 +83,7 @@
                 "waf_profile": "__default__",
                 "acl_active": true,
                 "waf_active": true,
-                "limit_ids": [
-                    "limitexclude"
-                ]
+                "limit_profile_ids": ["limitexcludeprofile"]
             },
             {
                 "match": "^/rr/",
@@ -102,7 +92,7 @@
                 "waf_profile": "rr",
                 "acl_active": false,
                 "waf_active": true,
-                "limit_ids": []
+                "limit_profile_ids": []
             },
             {
                 "name": "waf-short-headers",
@@ -111,7 +101,7 @@
                 "acl_active": false,
                 "waf_profile": "e2e000000002",
                 "waf_active": true,
-                "limit_ids": []
+                "limit_profile_ids": []
             },
             {
                 "name": "scope-country-include",
@@ -120,9 +110,7 @@
                 "acl_active": true,
                 "waf_profile": "__default__",
                 "waf_active": true,
-                "limit_ids": [
-                    "e2e1000000007"
-                ]
+                "limit_profile_ids": ["e2e1000000007profile"]
             },
             {
                 "name": "ban-test",
@@ -131,9 +119,7 @@
                 "acl_active": true,
                 "waf_profile": "__default__",
                 "waf_active": true,
-                "limit_ids": [
-                    "f971e92459e2"
-                ]
+                "limit_profile_ids": ["f971e92459e2profile"]
             },
             {
                 "match": "/",
@@ -142,7 +128,7 @@
                 "waf_profile": "__default__",
                 "acl_active": false,
                 "waf_active": false,
-                "limit_ids": []
+                "limit_profile_ids": []
             }
         ]
     }

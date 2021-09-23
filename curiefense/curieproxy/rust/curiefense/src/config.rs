@@ -17,9 +17,9 @@ use std::time::SystemTime;
 use crate::logs::Logs;
 use flow::{flow_resolve, FlowElement, SequenceKey};
 use hostmap::{HostMap, SecurityPolicy};
-use limit::{limit_order, Limit};
+use limit::{limit_order, Limit, LimitProfile};
 use globalfilter::GlobalFilterSection;
-use raw::{AclProfile, RawFlowEntry, RawHostMap, RawLimit, RawGlobalFilterSection, RawSecurityPolicy, RawWafProfile};
+use raw::{AclProfile, RawFlowEntry, RawHostMap, RawLimit, RawLimitProfile, RawGlobalFilterSection, RawSecurityPolicy, RawWafProfile};
 use utils::Matching;
 use waf::{resolve_signatures, WafProfile, WafSignatures};
 
@@ -87,13 +87,14 @@ impl Config {
         logs: &mut Logs,
         rawmaps: Vec<RawSecurityPolicy>,
         limits: &HashMap<String, Limit>,
+        limit_profiles: &HashMap<String, LimitProfile>,
         acls: &HashMap<String, AclProfile>,
         wafprofiles: &HashMap<String, WafProfile>,
     ) -> (Vec<Matching<SecurityPolicy>>, Option<SecurityPolicy>) {
         let mut default: Option<SecurityPolicy> = None;
         let mut entries: Vec<Matching<SecurityPolicy>> = Vec::new();
 
-        for rawmap in rawmaps {
+        for mut rawmap in rawmaps {
             let acl_profile: AclProfile = match acls.get(&rawmap.acl_profile) {
                 Some(p) => p.clone(),
                 None => {
@@ -108,8 +109,20 @@ impl Config {
                     WafProfile::default()
                 }
             };
+
+            let mut olimitprofiles: Vec<LimitProfile> = Vec::new();
+            let mut limit_ids: Vec<String> = Vec::new();
+            for lpid in rawmap.limit_profile_ids {
+                match from_map(&limit_profiles, &lpid) {
+                    Ok(lmp) => {
+                        limit_ids.extend(lmp.limit_ids.clone());
+                        olimitprofiles.push(lmp);
+                    },
+                    Err(rr) => logs.error(format!("When resolving limit profiles in rawmap {}, {}", rawmap.name, rr)),
+                }
+            }
             let mut olimits: Vec<Limit> = Vec::new();
-            for lid in rawmap.limit_ids {
+            for lid in limit_ids {
                 match from_map(&limits, &lid) {
                     Ok(lm) => olimits.push(lm),
                     Err(rr) => logs.error(format!("When resolving limits in rawmap {}, {}", rawmap.name, rr)),
@@ -124,6 +137,7 @@ impl Config {
                 waf_active: rawmap.waf_active,
                 waf_profile,
                 limits: olimits,
+                limit_profiles: olimitprofiles,
                 name: rawmap.name,
             };
             if rawmap.match_ == "__default__" || (rawmap.match_ == "/" && securitypolicy.name == "default") {
@@ -150,6 +164,7 @@ impl Config {
         last_mod: SystemTime,
         rawmaps: Vec<RawHostMap>,
         rawlimits: Vec<RawLimit>,
+        rawlimitprofiles: Vec<RawLimitProfile>,
         rawglobalfilters: Vec<RawGlobalFilterSection>,
         rawacls: Vec<AclProfile>,
         rawwafprofiles: Vec<RawWafProfile>,
@@ -160,12 +175,13 @@ impl Config {
         let mut securitypolicies: Vec<Matching<HostMap>> = Vec::new();
 
         let limits = Limit::resolve(logs, rawlimits);
+        let limit_profiles = LimitProfile::resolve(logs, rawlimitprofiles);
         let waf_profiles = WafProfile::resolve(logs, rawwafprofiles);
         let acls = rawacls.into_iter().map(|a| (a.id.clone(), a)).collect();
 
         // build the entries while looking for the default entry
         for rawmap in rawmaps {
-            let (entries, default_entry) = Config::resolve_security_policies(logs, rawmap.map, &limits, &acls, &waf_profiles);
+            let (entries, default_entry) = Config::resolve_security_policies(logs, rawmap.map, &limits, &limit_profiles, &acls, &waf_profiles);
             if default_entry.is_none() {
                 logs.warning(format!(
                     "HostMap entry '{}', id '{}' does not have a default entry",
@@ -261,6 +277,7 @@ impl Config {
         let securitypolicy = Config::load_config_file(logs, &bjson, "securitypolicy.json");
         let globalfilters = Config::load_config_file(logs, &bjson, "globalfilter-lists.json");
         let limits = Config::load_config_file(logs, &bjson, "limits.json");
+        let limitprofiles = Config::load_config_file(logs, &bjson, "limitprofiles.json");
         let acls = Config::load_config_file(logs, &bjson, "acl-profiles.json");
         let wafprofiles = Config::load_config_file(logs, &bjson, "waf-profiles.json");
         let wafsignatures = Config::load_config_file(logs, &bjson, "waf-signatures.json");
@@ -278,6 +295,7 @@ impl Config {
             last_mod,
             securitypolicy,
             limits,
+            limitprofiles,
             globalfilters,
             acls,
             wafprofiles,
