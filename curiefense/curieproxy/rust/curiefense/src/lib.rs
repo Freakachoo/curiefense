@@ -157,7 +157,7 @@ pub fn inspect_generic_request_map<GH: Grasshopper>(
     logs.debug("flow checks done");
 
     // limit checks
-    let limit_check = limit_check(logs, &securitypolicy.name, &reqinfo, &securitypolicy.limits, &mut tags);
+    let limit_check = limit_check(logs, &securitypolicy, &reqinfo, &mut tags);
     if let SimpleDecision::Action(action, reason) = limit_check {
         let decision = action.to_decision(is_human, &mgh, &reqinfo.headers, reason);
         if decision.is_final() {

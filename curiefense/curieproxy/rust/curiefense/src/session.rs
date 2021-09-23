@@ -237,7 +237,7 @@ pub fn session_limit_check(session_id: &str) -> anyhow::Result<Decision> {
     let sdecision = with_request_info(uuid, |rinfo| {
         with_securitypolicy(uuid, |securitypolicy| {
             with_tags_mut(uuid, |mut tags| {
-                Ok(limit_check(&mut logs, &securitypolicy.name, &rinfo, &limits, &mut tags))
+                Ok(limit_check(&mut logs, &securitypolicy, &rinfo, &mut tags))
             })
         })
     });

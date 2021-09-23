@@ -1,7 +1,8 @@
 use crate::logs::Logs;
 use redis::RedisResult;
 
-use crate::config::limit::Limit;
+use crate::config::limit::{Limit, LimitProfile};
+use crate::config::hostmap::SecurityPolicy;
 use crate::interface::{SimpleActionT, SimpleDecision, Tags};
 use crate::redis::redis_conn;
 use crate::utils::{select_string, RequestInfo};
@@ -28,10 +29,16 @@ fn limit_react(
     logs: &mut Logs,
     tags: &mut Tags,
     cnx: &mut redis::Connection,
+    limit_profiles: &Vec<LimitProfile>,
     limit: &Limit,
     key: String,
 ) -> SimpleDecision {
     tags.insert(&limit.name);
+    for lp in limit_profiles {
+        if lp.limit_ids.contains(&limit.id) {
+            tags.insert(&lp.name);
+        }
+    }
     let action = if let SimpleActionT::Ban(subaction, ttl) = &limit.action.atype {
         logs.info(format!("Banned key {} for {}s", key, ttl));
         let ban_key = get_ban_key(&key);
@@ -101,13 +108,12 @@ fn limit_match(tags: &Tags, elem: &Limit) -> bool {
 
 pub fn limit_check(
     logs: &mut Logs,
-    security_policy_name: &str,
+    security_policy: &SecurityPolicy,
     reqinfo: &RequestInfo,
-    limits: &[Limit],
     tags: &mut Tags,
 ) -> SimpleDecision {
     // early return to avoid redis connection
-    if limits.is_empty() {
+    if security_policy.limits.is_empty() {
         logs.debug("no limits to check");
         return SimpleDecision::Pass;
     }
@@ -121,13 +127,13 @@ pub fn limit_check(
         }
     };
 
-    for limit in limits {
+    for limit in &security_policy.limits {
         if !limit_match(tags, limit) {
             logs.debug(format!("limit {} excluded", limit.name));
             continue;
         }
 
-        let key = match build_key(security_policy_name, reqinfo, limit) {
+        let key = match build_key(&security_policy.name, reqinfo, limit) {
             None => return SimpleDecision::Pass,
             Some(k) => k,
         };
@@ -135,12 +141,12 @@ pub fn limit_check(
 
         if limit.limit == 0 {
             logs.debug("limit=0");
-            return limit_react(logs, tags, &mut redis, limit, key);
+            return limit_react(logs, tags, &mut redis, &security_policy.limit_profiles, limit, key);
         }
 
         if is_banned(&mut redis, &key) {
             logs.debug("is banned!");
-            return limit_react(logs, tags, &mut redis, limit, key);
+            return limit_react(logs, tags, &mut redis, &security_policy.limit_profiles, limit, key);
         }
 
         let pairvalue = limit.pairwith.as_ref().and_then(|sel| select_string(reqinfo, sel));
@@ -148,7 +154,7 @@ pub fn limit_check(
         match redis_check_limit(&mut redis, &key, limit.limit, limit.ttl, pairvalue) {
             Err(rr) => logs.error(rr),
             Ok(true) => {
-                return limit_react(logs, tags, &mut redis, limit, key);
+                return limit_react(logs, tags, &mut redis, &security_policy.limit_profiles, limit, key);
             }
             Ok(false) => (),
         }
