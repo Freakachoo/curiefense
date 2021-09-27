@@ -100,7 +100,7 @@ def v1_last_rl_convert(v1_document, *args):
     return vLast
 
 
-def last_v1_urlmap_convert(document, params={"config": ""}, *args):
+def last_v1_urlmap_convert(document, params=None, *args):
     """
     Convert Url Map from Latesl into V1 API format.
     Latlest API (starting from V2) supports of embedding Rate Limit Profiles only
@@ -115,6 +115,7 @@ def last_v1_urlmap_convert(document, params={"config": ""}, *args):
     Returns:
         dict: converted to V1 format
     """
+    params = {"config": ""} if params is None else params
     v1 = deepcopy(document)
     for map in v1["map"]:
         limit_ids = []
@@ -129,7 +130,7 @@ def last_v1_urlmap_convert(document, params={"config": ""}, *args):
     return v1
 
 
-def v1_last_urlmap_convert(v1_document, params={"config": ""}, *args):
+def v1_last_urlmap_convert(v1_document, params=None, *args):
     """
     Convert Url Map from V1 into Latest API format.
     Latlest API (starting from V2) supports of embedding only Rate Limit Profiles
@@ -147,6 +148,7 @@ def v1_last_urlmap_convert(v1_document, params={"config": ""}, *args):
     Returns:
         dict: converted to Latest API format
     """
+    params = {"config": ""} if params is None else params
     vLast = deepcopy(v1_document)
     profiles = current_app.backend.documents_get(params["config"], "ratelimitprofiles")
     for map_index, map in enumerate(vLast["map"]):
@@ -173,7 +175,7 @@ def v1_last_urlmap_convert(v1_document, params={"config": ""}, *args):
     return vLast
 
 
-def vconfigconvert(ctype, doc, vfrom="last", vto="last", params={}):
+def vconfigconvert(ctype, doc, vfrom="last", vto="last", params=None):
     """
     Convert configuration documents structure from between API versions formats.
 
@@ -187,6 +189,7 @@ def vconfigconvert(ctype, doc, vfrom="last", vto="last", params={}):
     Returns:
         dict: converted config document or the original one if nothing to convert.
     """
+    params = {} if params is None else params
     apimap = {
         "v1_last": {
             "ratelimits": v1_last_rl_convert,
