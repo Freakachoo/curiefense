@@ -30,7 +30,7 @@ describe('SecurityPoliciesEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '__default__',
             'waf_active': false,
-            'limit_ids': ['f971e92459e2'],
+            'limit_profile_ids': ['f971e92459e2'],
           },
           {
             'name': 'entry name',
@@ -39,7 +39,7 @@ describe('SecurityPoliciesEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '009e846e819e',
             'waf_active': false,
-            'limit_ids': ['365757ec0689'],
+            'limit_profile_ids': ['365757ec0689'],
           },
         ],
       },
@@ -55,7 +55,7 @@ describe('SecurityPoliciesEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '__default__',
             'waf_active': false,
-            'limit_ids': ['f971e92459e2', '365757ec0689'],
+            'limit_profile_ids': ['f971e92459e2', '365757ec0689'],
           },
           {
             'name': 'entry name',
@@ -64,7 +64,7 @@ describe('SecurityPoliciesEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '009e846e819e',
             'waf_active': false,
-            'limit_ids': [],
+            'limit_profile_ids': [],
           },
         ],
       },
@@ -230,7 +230,7 @@ describe('SecurityPoliciesEditor.vue', () => {
           'acl_active': false,
           'waf_profile': '009e846e819e',
           'waf_active': true,
-          'limit_ids': ['365757ec0689'],
+          'limit_profile_ids': ['365757ec0689'],
         },
         {
           'name': 'two',
@@ -239,7 +239,7 @@ describe('SecurityPoliciesEditor.vue', () => {
           'acl_active': true,
           'waf_profile': '__default__',
           'waf_active': false,
-          'limit_ids': ['f971e92459e2'],
+          'limit_profile_ids': ['f971e92459e2'],
         },
       ],
     }
@@ -293,7 +293,7 @@ describe('SecurityPoliciesEditor.vue', () => {
       const entryACL = entryRow.find('.entry-acl')
       expect(entryACL.text()).toEqual('default acl')
       const entryRateLimitCount = entryRow.find('.entry-rate-limits-count')
-      expect(entryRateLimitCount.text()).toEqual(String(securityPoliciesDocs[0].map[0].limit_ids.length))
+      expect(entryRateLimitCount.text()).toEqual(String(securityPoliciesDocs[0].map[0].limit_profile_ids.length))
     })
 
     test('should have correct entry data displayed in non-expanded rows (second row)', () => {
@@ -308,7 +308,7 @@ describe('SecurityPoliciesEditor.vue', () => {
       const entryACL = entryRow.find('.entry-acl')
       expect(entryACL.text()).toEqual('an ACL')
       const entryRateLimitCount = entryRow.find('.entry-rate-limits-count')
-      expect(entryRateLimitCount.text()).toEqual(String(securityPoliciesDocs[0].map[1].limit_ids.length))
+      expect(entryRateLimitCount.text()).toEqual(String(securityPoliciesDocs[0].map[1].limit_profile_ids.length))
     })
 
     test('should have correct entry data displayed in expanded row', async () => {
@@ -339,7 +339,7 @@ describe('SecurityPoliciesEditor.vue', () => {
       const currentEntryRow = table.findAll('.current-entry-row').at(0)
       const entryRateLimitsTable = currentEntryRow.find('.current-entry-rate-limits-table')
       const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
-      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_ids.length)
+      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_profile_ids.length)
       const rateLimitName = entryRateLimitsRows.at(0).find('.rate-limit-name')
       expect(rateLimitName.text()).toEqual(rateLimitsDocs[0].name)
       const rateLimitDescription = entryRateLimitsRows.at(0).find('.rate-limit-description')
@@ -351,7 +351,7 @@ describe('SecurityPoliciesEditor.vue', () => {
     })
 
     test('should not have rate limit data displayed if no corresponding rate limit exists', async () => {
-      securityPoliciesDocs[1].map[0].limit_ids.push('invalid')
+      securityPoliciesDocs[1].map[0].limit_profile_ids.push('invalid')
       wrapper.setProps({
         selectedDoc: securityPoliciesDocs[1],
       })
@@ -363,7 +363,7 @@ describe('SecurityPoliciesEditor.vue', () => {
       const currentEntryRow = table.findAll('.current-entry-row').at(0)
       const entryRateLimitsTable = currentEntryRow.find('.current-entry-rate-limits-table')
       const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
-      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[1].map[0].limit_ids.length - 1)
+      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[1].map[0].limit_profile_ids.length - 1)
       const rateLimitName0 = entryRateLimitsRows.at(0).find('.rate-limit-name')
       expect(rateLimitName0.text()).toEqual(rateLimitsDocs[0].name)
       const rateLimitName1 = entryRateLimitsRows.at(1).find('.rate-limit-name')
@@ -413,7 +413,7 @@ describe('SecurityPoliciesEditor.vue', () => {
       await Vue.nextTick()
       const newRateLimitSelection = entryRateLimitsTable.find('.new-rate-limit-selection')
       const options = newRateLimitSelection.findAll('option')
-      expect(options.length).toEqual(rateLimitsDocs.length - securityPoliciesDocs[0].map[0].limit_ids.length)
+      expect(options.length).toEqual(rateLimitsDocs.length - securityPoliciesDocs[0].map[0].limit_profile_ids.length)
       expect(options.at(0).text()).toEqual(`${rateLimitsDocs[1].name} ${rateLimitsDocs[1].description}`)
     })
 
@@ -435,7 +435,7 @@ describe('SecurityPoliciesEditor.vue', () => {
       confirmAddButton.trigger('click')
       await Vue.nextTick()
       const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
-      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_ids.length + 1)
+      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_profile_ids.length + 1)
     })
 
     test('should not add a rate limit if nothing is selected in dropdown', async () => {
@@ -452,7 +452,7 @@ describe('SecurityPoliciesEditor.vue', () => {
       confirmAddButton.trigger('click')
       await Vue.nextTick()
       const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
-      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_ids.length)
+      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_profile_ids.length)
     })
 
     test('should remove selected rate limit from table', async () => {
@@ -466,7 +466,7 @@ describe('SecurityPoliciesEditor.vue', () => {
       removeButton.trigger('click')
       await wrapper.vm.$forceUpdate()
       const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
-      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_ids.length - 1)
+      expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_profile_ids.length - 1)
     })
 
     test('should change route when create new rate limit is clicked', async () => {
@@ -855,7 +855,7 @@ describe('SecurityPoliciesEditor.vue', () => {
         const currentEntryRow = table.findAll('.current-entry-row').at(0)
         const entryRateLimitsTable = currentEntryRow.find('.current-entry-rate-limits-table')
         const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
-        expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[1].limit_ids.length)
+        expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[1].limit_profile_ids.length)
         const rateLimitName = entryRateLimitsRows.at(0).find('.rate-limit-name')
         expect(rateLimitName.text()).toEqual(rateLimitsDocs[1].name)
         const rateLimitDescription = entryRateLimitsRows.at(0).find('.rate-limit-description')
@@ -913,7 +913,7 @@ describe('SecurityPoliciesEditor.vue', () => {
         expect((entryACLActive.element as HTMLInputElement).checked).toEqual(securityPoliciesDocs[0].map[1].acl_active)
         const entryRateLimitsTable = currentEntryRow.find('.current-entry-rate-limits-table')
         const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
-        expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[1].limit_ids.length)
+        expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[1].limit_profile_ids.length)
       })
     })
 

@@ -259,7 +259,7 @@ describe('DocumentSearch.vue', () => {
             'acl_active': false,
             'waf_profile': '__default__',
             'waf_active': false,
-            'limit_ids': ['f971e92459e2'],
+            'limit_profile_ids': ['f971e92459e2'],
           },
           {
             'name': 'name',
@@ -268,7 +268,7 @@ describe('DocumentSearch.vue', () => {
             'acl_active': false,
             'waf_profile': '__default__',
             'waf_active': false,
-            'limit_ids': ['f971e92459e2'],
+            'limit_profile_ids': ['f971e92459e2'],
           },
           {
             'name': 'name',
@@ -277,7 +277,7 @@ describe('DocumentSearch.vue', () => {
             'acl_active': false,
             'waf_profile': '__default__',
             'waf_active': false,
-            'limit_ids': ['f971e92459e2'],
+            'limit_profile_ids': ['f971e92459e2'],
           },
         ],
       },

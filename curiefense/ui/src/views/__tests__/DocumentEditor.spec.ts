@@ -592,7 +592,7 @@ describe('DocumentEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '009e846e819e',
             'waf_active': false,
-            'limit_ids': [],
+            'limit_profile_ids': [],
           },
         ],
       },

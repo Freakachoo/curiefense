@@ -375,7 +375,7 @@ export default Vue.extend({
     newSecurityPolicyConnections(): SecurityPolicy[] {
       return this.securityPolicies.filter((securityPolicy) => {
         return !securityPolicy.map.every((securityPolicyEntry) => {
-          return securityPolicyEntry.limit_ids.includes(this.localDoc.id)
+          return securityPolicyEntry.limit_profile_ids.includes(this.localDoc.id)
         })
       })
     },
@@ -385,7 +385,7 @@ export default Vue.extend({
         return securityPolicy.id === this.newSecurityPolicyConnectionData.map?.id
       })
       return securityPolicy?.map?.filter((securityPolicyEntry) => {
-        return !securityPolicyEntry.limit_ids.includes(this.localDoc.id)
+        return !securityPolicyEntry.limit_profile_ids.includes(this.localDoc.id)
       })
     },
   },
@@ -459,11 +459,11 @@ export default Vue.extend({
     getConnectedSecurityPoliciesEntries() {
       this.connectedSecurityPoliciesEntries = _.sortBy(_.flatMap(_.filter(this.securityPolicies, (securityPolicy) => {
         return _.some(securityPolicy.map, (mapEntry: SecurityPolicyEntryMatch) => {
-          return mapEntry.limit_ids.includes(this.localDoc.id)
+          return mapEntry.limit_profile_ids.includes(this.localDoc.id)
         })
       }), (securityPolicy) => {
         return _.compact(_.map(securityPolicy.map, (mapEntry) => {
-          if (mapEntry.limit_ids.includes(this.localDoc.id)) {
+          if (mapEntry.limit_profile_ids.includes(this.localDoc.id)) {
             return {
               name: securityPolicy.name,
               id: securityPolicy.id,
@@ -499,7 +499,7 @@ export default Vue.extend({
       const mapEntry = _.find(doc.map, (mapEntry) => {
         return mapEntry.match === entryMatch
       })
-      mapEntry.limit_ids.push(this.localDoc.id)
+      mapEntry.limit_profile_ids.push(this.localDoc.id)
       this.closeNewSecurityPolicyConnection()
       const docTypeText = this.titles[selectedDocType + '-singular']
       const successMessage = `The connection to the ${docTypeText} was added.`
@@ -519,10 +519,10 @@ export default Vue.extend({
       const mapEntry = _.find(doc.map, (mapEntry) => {
         return mapEntry.match === entryMatch
       })
-      const limitIdIndex = _.findIndex(mapEntry.limit_ids, (rateLimitID) => {
+      const limitIdIndex = _.findIndex(mapEntry.limit_profile_ids, (rateLimitID) => {
         return rateLimitID === this.localDoc.id
       })
-      mapEntry.limit_ids.splice(limitIdIndex, 1)
+      mapEntry.limit_profile_ids.splice(limitIdIndex, 1)
       const docTypeText = this.titles[selectedDocType + '-singular']
       const successMessage = `The connection to the ${docTypeText} was removed.`
       const failureMessage = `Failed while attempting to remove the connection to the ${docTypeText}.`

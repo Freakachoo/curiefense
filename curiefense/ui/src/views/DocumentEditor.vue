@@ -212,6 +212,7 @@ import WAFEditor from '@/doc-editors/WAFEditor.vue'
 import WAFSigsEditor from '@/doc-editors/WAFSigsEditor.vue'
 import SecurityPoliciesEditor from '@/doc-editors/SecurityPoliciesEditor.vue'
 import RateLimitsEditor from '@/doc-editors/RateLimitsEditor.vue'
+import RateLimitsProfilesEditor from '@/doc-editors/RateLimitsProfilesEditor.vue'
 import GlobalFilterListEditor from '@/doc-editors/GlobalFilterListEditor.vue'
 import FlowControlPolicyEditor from '@/doc-editors/FlowControlPolicyEditor.vue'
 import GitHistory from '@/components/GitHistory.vue'
@@ -276,6 +277,7 @@ export default Vue.extend({
         'flowcontrol': {component: FlowControlPolicyEditor},
         'globalfilters': {component: GlobalFilterListEditor},
         'ratelimits': {component: RateLimitsEditor},
+        'ratelimitprofiles': {component: RateLimitsProfilesEditor},
         'securitypolicies': {component: SecurityPoliciesEditor},
         'wafpolicies': {component: WAFEditor},
         'wafrules': {component: WAFSigsEditor},

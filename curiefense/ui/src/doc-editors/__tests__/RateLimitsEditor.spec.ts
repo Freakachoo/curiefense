@@ -42,7 +42,7 @@ describe('RateLimitsEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '__default__',
             'waf_active': false,
-            'limit_ids': ['f971e92459e2'],
+            'limit_profile_ids': ['f971e92459e2'],
           },
           {
             'name': 'entry name',
@@ -51,7 +51,7 @@ describe('RateLimitsEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '009e846e819e',
             'waf_active': false,
-            'limit_ids': ['365757ec0689'],
+            'limit_profile_ids': ['365757ec0689'],
           },
         ],
       },
@@ -67,7 +67,7 @@ describe('RateLimitsEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '__default__',
             'waf_active': false,
-            'limit_ids': ['f971e92459e2', '365757ec0689'],
+            'limit_profile_ids': ['f971e92459e2', '365757ec0689'],
           },
           {
             'name': 'entry name',
@@ -76,7 +76,7 @@ describe('RateLimitsEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '009e846e819e',
             'waf_active': false,
-            'limit_ids': [],
+            'limit_profile_ids': [],
           },
         ],
       },
@@ -436,8 +436,8 @@ describe('RateLimitsEditor.vue', () => {
 
     test('should show an appropriate message when there are no available new connections', async () => {
       const wantedMessage = `All Security Policies entries are currently connected to this Rate Limit`
-      securityPoliciesDocs[0].map[1].limit_ids.push(rateLimitsDocs[0].id)
-      securityPoliciesDocs[1].map[1].limit_ids.push(rateLimitsDocs[0].id)
+      securityPoliciesDocs[0].map[1].limit_profile_ids.push(rateLimitsDocs[0].id)
+      securityPoliciesDocs[1].map[1].limit_profile_ids.push(rateLimitsDocs[0].id)
       wrapper = shallowMount(RateLimitsEditor, {
         propsData: {
           selectedDoc: rateLimitsDocs[0],
@@ -467,7 +467,7 @@ describe('RateLimitsEditor.vue', () => {
       const putSpy = jest.spyOn(axios, 'put').mockImplementation(() => Promise.resolve())
       const wantedUrl = `/conf/api/v2/configs/${(wrapper.vm as any).selectedBranch}/d/securitypolicies/e/${securityPoliciesDocs[1].id}/`
       const wantedDoc = JSON.parse(JSON.stringify(securityPoliciesDocs[1]))
-      wantedDoc.map[1].limit_ids.push(rateLimitsDocs[0].id)
+      wantedDoc.map[1].limit_profile_ids.push(rateLimitsDocs[0].id)
       const newConnectionButton = wrapper.find('.new-connection-button')
       newConnectionButton.trigger('click')
       await Vue.nextTick()
@@ -486,7 +486,7 @@ describe('RateLimitsEditor.vue', () => {
       const putSpy = jest.spyOn(axios, 'put').mockImplementation(() => Promise.resolve())
       const wantedUrl = `/conf/api/v2/configs/${(wrapper.vm as any).selectedBranch}/d/securitypolicies/e/${securityPoliciesDocs[0].id}/`
       const wantedDoc = JSON.parse(JSON.stringify(securityPoliciesDocs[0]))
-      wantedDoc.map[0].limit_ids = []
+      wantedDoc.map[0].limit_profile_ids = []
       const removeConnectionButton = wrapper.findAll('.remove-connection-button').at(0)
       removeConnectionButton.trigger('click')
       await Vue.nextTick()

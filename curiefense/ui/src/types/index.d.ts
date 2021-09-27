@@ -28,7 +28,7 @@ declare module CuriefenseClient {
     waf_profile: string
     acl_active: boolean
     waf_active: boolean
-    limit_ids: string[]
+    limit_profile_ids: RateLimitsProfile['id'][]
   }
 
   type GlobalFilterSectionEntry = [Category, string | string[], string?]
@@ -149,6 +149,13 @@ declare module CuriefenseClient {
     exclude: string[]
     include: string[]
     pairwith: LimitOptionType
+  }
+
+  type RateLimitsProfile = {
+    id: string
+    name: string,
+    description?: string,
+    limit_ids: RateLimit['id'][],
   }
 
   type HttpRequestMethods = typeof httpRequestMethods[number]

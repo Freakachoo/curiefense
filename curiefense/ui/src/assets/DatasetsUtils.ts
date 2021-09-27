@@ -1,4 +1,6 @@
-import {ACLProfile, FlowControlPolicy, RateLimit, GlobalFilter, SecurityPolicy, WAFPolicy, WAFRule} from '@/types'
+import {
+  ACLProfile, FlowControlPolicy, RateLimit, GlobalFilter, SecurityPolicy, WAFPolicy, WAFRule, RateLimitsProfile,
+} from '@/types'
 import {httpRequestMethods} from '@/types/const'
 
 const titles: { [key: string]: string } = {
@@ -46,6 +48,8 @@ const titles: { [key: string]: string } = {
   'globalfilters-singular': 'Global Filter',
   'flowcontrol': 'Flow Control Policies',
   'flowcontrol-singular': 'Flow Control Policy',
+  'ratelimitprofiles': 'Rate Limits Profiles',
+  'ratelimitprofiles-singular': 'Rate Limits Profile',
 }
 
 const limitOptionsTypes = {
@@ -154,7 +158,7 @@ const newDocEntryFactory: { [key: string]: Function } = {
           'waf_profile': '__default__',
           'acl_active': true,
           'waf_active': true,
-          'limit_ids': [],
+          'limit_profile_ids': [],
         },
       ],
     }
@@ -218,6 +222,13 @@ const newDocEntryFactory: { [key: string]: Function } = {
     }
   },
 
+  ratelimitprofiles(): RateLimitsProfile {
+    return {
+      id: generateUUID2(),
+      name: 'New Rate Limits Profile',
+      limit_ids: [],
+    }
+  },
 }
 
 export default {

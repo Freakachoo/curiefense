@@ -126,7 +126,7 @@
                                        type="text"
                                        @input="emitDocUpdate();
                                                validateInput($event, isSelectedMapEntryMatchValid(mapIndex))"
-                                       title="A unique matching regex value, not overlapping other Security Policy definitions"
+                                       :title="currentEntryMatchTitle"
                                        placeholder="Matching domain(s) regex"
                                        required
                                        :disabled="localDoc.id === '__default__' && initialMapEntryMatch === '/'"
@@ -138,29 +138,24 @@
                                 </span>
                               </div>
                             </div>
-                            <hr/>
+                            <hr />
                             <p class="title is-6 has-text-grey">
-                              Rate Limit Rules
+                              Rate Limit Profiles
                             </p>
                             <div class="content">
                               <table class="table is-hoverable is-narrow is-fullwidth current-entry-rate-limits-table">
                                 <thead>
                                 <tr>
                                   <th class="is-size-7">
-                                    Rule Name
+                                    Profile Name
                                   </th>
                                   <th class="is-size-7">
                                     Description
                                   </th>
-                                  <th class="is-size-7">
-                                    Threshold
-                                  </th>
-                                  <th class="is-size-7">
-                                    Timeframe
-                                  </th>
-                                  <th class="has-text-centered is-size-7 width-60px">
-                                    <a v-if="limitRuleNames && mapEntry.limit_ids &&
-                                             limitRuleNames.length > existingRateLimitIDs(mapEntry).length"
+                                  <th class="has-text-right is-size-7 width-60px">
+                                    <a v-if="mapEntry.limit_profile_ids &&
+                                             !limitNewEntryMode(mapIndex) &&
+                                             rateLimitProfiles.length > existingRateLimitIDs(mapEntry).length"
                                        class="has-text-grey-dark is-small rate-limit-add-button"
                                        title="Add new"
                                        tabindex="0"
@@ -170,11 +165,21 @@
                                        @keypress.enter="limitNewEntryModeMapEntryId = mapIndex">
                                       <span class="icon is-small"><i class="fas fa-plus"></i></span>
                                     </a>
+                                    <a v-if="limitNewEntryMode(mapIndex)"
+                                       class="has-text-grey-dark is-small rate-limit-add-button"
+                                       title="Cancel adding new"
+                                       tabindex="0"
+                                       @click="limitNewEntryModeMapEntryId = null"
+                                       @keypress.space.prevent
+                                       @keypress.space="limitNewEntryModeMapEntryId = null"
+                                       @keypress.enter="limitNewEntryModeMapEntryId = null">
+                                      <span class="icon is-small"><i class="fas fa-minus" /></span>
+                                    </a>
                                   </th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <template v-for="(limitId, limitIndex) in mapEntry.limit_ids">
+                                <template v-for="(limitId, limitIndex) in mapEntry.limit_profile_ids">
                                   <tr v-if="limitDetails(limitId)"
                                       :key="limitId"
                                       class="rate-limit-row">
@@ -186,14 +191,6 @@
                                         v-if="limitDetails(limitId)">
                                       {{ limitDetails(limitId).description }}
                                     </td>
-                                    <td class="is-size-7 rate-limit-threshold"
-                                        v-if="limitDetails(limitId)">
-                                      {{ limitDetails(limitId).limit }}
-                                    </td>
-                                    <td class="is-size-7 rate-limit-ttl"
-                                        v-if="limitDetails(limitId)">
-                                      {{ limitDetails(limitId).ttl }}
-                                    </td>
                                     <td class="has-text-centered is-size-7 width-60px">
                                       <a class="is-small has-text-grey rate-limit-remove-button"
                                          title="Remove entry"
@@ -202,21 +199,23 @@
                                          @keypress.space.prevent
                                          @keypress.space="removeRateLimitFromEntry(mapEntry, limitIndex)"
                                          @keypress.enter="removeRateLimitFromEntry(mapEntry, limitIndex)">
-                                        remove
+                                          remove
                                       </a>
                                     </td>
                                   </tr>
                                 </template>
                                 <tr v-if="limitNewEntryMode(mapIndex)"
                                     class="new-rate-limit-row">
-                                  <td colspan="4">
+                                  <td colspan="2">
                                     <div class="control is-expanded">
                                       <div class="select is-small is-size-7 is-fullwidth">
                                         <select class="select is-small new-rate-limit-selection"
                                                 title="Rate limit ID"
                                                 v-model="limitMapEntryId">
-                                          <option v-for="rule in newLimitRules(mapEntry.limit_ids)" :key="rule.id"
-                                                  :value="rule.id">{{ rule.name + ' ' + rule.description }}
+                                          <option v-for="profile in newLimitRules(mapEntry.limit_profile_ids)"
+                                                  :key="profile.id"
+                                                  :value="profile.id">
+                                            {{ profile.name + ' ' + profile.description }}
                                           </option>
                                         </select>
                                       </div>
@@ -230,19 +229,19 @@
                                        @keypress.space.prevent
                                        @keypress.space="addRateLimitToEntry(mapEntry, limitMapEntryId)"
                                        @keypress.enter="addRateLimitToEntry(mapEntry, limitMapEntryId)">
-                                      add
+                                        add
                                     </a>
                                   </td>
                                 </tr>
-                                <tr v-if="mapEntry.limit_ids && !existingRateLimitIDs(mapEntry).length">
-                                  <td colspan="5">
+                                <tr v-if="!existingRateLimitIDs(mapEntry).length && !limitNewEntryMode(mapIndex)">
+                                  <td colspan="3">
                                     <p class="is-size-7 has-text-grey has-text-centered">
-                                      To attach an existing rule, click
+                                      To attach an existing profile, click
                                       <a class="rate-limit-text-add-button"
                                          title="Add New"
                                          @click="limitNewEntryModeMapEntryId = mapIndex">here</a>.
                                       <br/>
-                                      To create a new rate-limit rule, click
+                                      To create a new rate-limit profile, click
                                       <a class="rate-limit-referral-button"
                                          @click="referToRateLimit">here</a>.
                                     </p>
@@ -344,7 +343,7 @@ import _ from 'lodash'
 import DatasetsUtils from '@/assets/DatasetsUtils.ts'
 import RequestsUtils from '@/assets/RequestsUtils.ts'
 import Vue, {VueConstructor} from 'vue'
-import {ACLProfile, RateLimit, SecurityPolicy, SecurityPolicyEntryMatch, WAFPolicy} from '@/types'
+import {ACLProfile, RateLimitsProfile, SecurityPolicy, SecurityPolicyEntryMatch, WAFPolicy} from '@/types'
 import {AxiosResponse} from 'axios'
 import Utils from '@/assets/Utils'
 
@@ -370,7 +369,7 @@ export default (Vue as VueConstructor<Vue & {
       // for SecurityPolicy drop downs
       wafProfileNames: [] as [WAFPolicy['id'], WAFPolicy['name']][],
       aclProfileNames: [] as [ACLProfile['id'], ACLProfile['name']][],
-      limitRuleNames: [] as RateLimit[],
+      rateLimitProfiles: [] as RateLimitsProfile[],
       domainNames: [] as SecurityPolicy['match'][],
       entriesMatchNames: [] as SecurityPolicyEntryMatch['match'][],
 
@@ -379,6 +378,7 @@ export default (Vue as VueConstructor<Vue & {
       initialDocDomainMatch: '',
       initialMapEntryMatch: '',
       upstreams: [],
+      currentEntryMatchTitle: 'A unique matching regex value, not overlapping other Security Policy definitions',
     }
   },
 
@@ -454,15 +454,19 @@ export default (Vue as VueConstructor<Vue & {
       })
     },
 
-    newLimitRules(currentRateLimitIDs: string[]): RateLimit[] {
-      return _.filter(this.limitRuleNames, (rule) => {
-        return _.indexOf(currentRateLimitIDs, rule.id) === -1
-      })
+    newLimitRules(currentRateLimitIDs: RateLimitsProfile['id'][]): RateLimitsProfile[] {
+      return _.filter(
+        this.rateLimitProfiles,
+        ({id}) => _.indexOf(currentRateLimitIDs, id) === -1,
+      ).map((profile) => ({
+        ...profile,
+        description: profile.description || '',
+      }))
     },
 
-    addRateLimitToEntry(mapEntry: SecurityPolicyEntryMatch, id: string) {
+    addRateLimitToEntry(mapEntry: SecurityPolicyEntryMatch, id: RateLimitsProfile['id']) {
       if ( id ) {
-        mapEntry.limit_ids.push(id)
+        mapEntry.limit_profile_ids.push(id)
         this.limitNewEntryModeMapEntryId = null
         this.limitMapEntryId = null
         this.emitDocUpdate()
@@ -470,24 +474,20 @@ export default (Vue as VueConstructor<Vue & {
     },
 
     removeRateLimitFromEntry(mapEntry: SecurityPolicyEntryMatch, index: number) {
-      mapEntry.limit_ids.splice(index, 1)
+      mapEntry.limit_profile_ids.splice(index, 1)
       this.emitDocUpdate()
     },
 
-    limitDetails(limitId: string): RateLimit {
-      return _.find(this.limitRuleNames, (rule) => {
-        return rule.id === limitId
-      })
+    limitDetails(limitId: RateLimitsProfile['id']): RateLimitsProfile {
+      return _.find(this.rateLimitProfiles, (rule) => rule.id === limitId)
     },
 
     limitNewEntryMode(id: number): boolean {
       return this.limitNewEntryModeMapEntryId === id
     },
 
-    existingRateLimitIDs(mapEntry: SecurityPolicyEntryMatch): RateLimit['id'][] {
-      return _.filter(mapEntry.limit_ids, (limitId) => {
-        return this.limitDetails(limitId) !== undefined
-      })
+    existingRateLimitIDs(mapEntry: SecurityPolicyEntryMatch): RateLimitsProfile['id'][] {
+      return _.filter(mapEntry.limit_profile_ids, (limitId) => !!this.limitDetails(limitId))
     },
 
     addNewProfile(map: SecurityPolicyEntryMatch, idx: number) {
@@ -538,7 +538,8 @@ export default (Vue as VueConstructor<Vue & {
 
     referToRateLimit() {
       this.$emit('form-invalid', false)
-      this.$router.push(`/config/${this.selectedBranch}/ratelimits`)
+      const {href} = this.$router.resolve({path: `/config/${this.selectedBranch}/ratelimitprofiles`})
+      window.open(href, '_blank')
     },
 
     wafacllimitProfileNames() {
@@ -570,9 +571,9 @@ export default (Vue as VueConstructor<Vue & {
 
       RequestsUtils.sendRequest({
         methodName: 'GET',
-        url: `configs/${branch}/d/ratelimits/`,
-      }).then((response: AxiosResponse<RateLimit[]>) => {
-        this.limitRuleNames = response.data
+        url: `configs/${branch}/d/ratelimitprofiles/`,
+      }).then(({data}: AxiosResponse<RateLimitsProfile[]>) => {
+        this.rateLimitProfiles = data
       })
     },
 

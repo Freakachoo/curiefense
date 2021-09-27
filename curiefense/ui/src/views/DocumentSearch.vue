@@ -398,9 +398,9 @@ export default Vue.extend({
         if (!connectedWAF.includes(map.waf_profile)) {
           connectedWAF.push(map.waf_profile)
         }
-        for (let j = 0; j < map.limit_ids.length; j++) {
-          if (!connectedRateLimits.includes(map.limit_ids[j])) {
-            connectedRateLimits.push(map.limit_ids[j])
+        for (let j = 0; j < map.limit_profile_ids.length; j++) {
+          if (!connectedRateLimits.includes(map.limit_profile_ids[j])) {
+            connectedRateLimits.push(map.limit_profile_ids[j])
           }
         }
       }
@@ -433,13 +433,13 @@ export default Vue.extend({
         }
         // add map id to referenced waf
         this.referencedWAF[map.waf_profile].push(doc.id)
-        for (let j = 0; j < map.limit_ids.length; j++) {
+        for (let j = 0; j < map.limit_profile_ids.length; j++) {
           // initialize array if needed
-          if (!this.referencedLimit[map.limit_ids[j]] || this.referencedLimit[map.limit_ids[j]].length === 0) {
-            this.referencedLimit[map.limit_ids[j]] = []
+          if (!this.referencedLimit[map.limit_profile_ids[j]] || this.referencedLimit[map.limit_profile_ids[j]].length === 0) {
+            this.referencedLimit[map.limit_profile_ids[j]] = []
           }
           // add map id to referenced rate limit
-          this.referencedLimit[map.limit_ids[j]].push(doc.id)
+          this.referencedLimit[map.limit_profile_ids[j]].push(doc.id)
         }
       }
     },
