@@ -1,7 +1,7 @@
 import DatasetsUtils from '../../assets/DatasetsUtils'
 import {describe, expect, test} from '@jest/globals'
 
-describe('RequestsUtils.ts', () => {
+describe('DatasetsUtils.ts', () => {
   const regexUUID = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/
   const regexUUID2 = /[0-9a-fA-F]{12}/
 
@@ -79,7 +79,7 @@ describe('RequestsUtils.ts', () => {
       expect(document['map'][0]['waf_profile']).toEqual('__default__')
       expect(document['map'][0]['acl_active']).toEqual(true)
       expect(document['map'][0]['waf_active']).toEqual(true)
-      expect(document['map'][0]['limit_ids']).toEqual([])
+      expect(document['map'][0]['limit_profile_ids']).toEqual([])
     })
 
     test('should generate a new Rate Limit', async () => {
@@ -122,6 +122,13 @@ describe('RequestsUtils.ts', () => {
       expect(regexUUID2.test(document['id'])).toBeTruthy()
       expect(document['name']).toEqual('New WAF Rule')
       expect(document['operand']).toEqual('')
+    })
+
+    test('should generate a new Rate Limits Profile', async () => {
+      const document = DatasetsUtils.newDocEntryFactory.ratelimitprofiles()
+      expect(regexUUID2.test(document.id)).toBeTruthy()
+      expect(document.name).toEqual('New Rate Limits Profile')
+      expect(document.limit_ids).toEqual([])
     })
   })
 })

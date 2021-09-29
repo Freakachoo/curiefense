@@ -215,7 +215,7 @@
                                           <option v-for="profile in newLimitRules(mapEntry.limit_profile_ids)"
                                                   :key="profile.id"
                                                   :value="profile.id">
-                                            {{ profile.name + ' ' + profile.description }}
+                                            {{ `${profile.name} ${profile.description || ''}` }}
                                           </option>
                                         </select>
                                       </div>
@@ -242,8 +242,11 @@
                                          @click="limitNewEntryModeMapEntryId = mapIndex">here</a>.
                                       <br/>
                                       To create a new rate-limit profile, click
-                                      <a class="rate-limit-referral-button"
-                                         @click="referToRateLimit">here</a>.
+                                      <router-link class="rate-limit-referral-button"
+                                                   :to="`/config/${selectedBranch}/ratelimits`"
+                                                   target="_blank">
+                                        here
+                                      </router-link>.
                                     </p>
                                   </td>
                                 </tr>
@@ -458,10 +461,7 @@ export default (Vue as VueConstructor<Vue & {
       return _.filter(
         this.rateLimitProfiles,
         ({id}) => _.indexOf(currentRateLimitIDs, id) === -1,
-      ).map((profile) => ({
-        ...profile,
-        description: profile.description || '',
-      }))
+      )
     },
 
     addRateLimitToEntry(mapEntry: SecurityPolicyEntryMatch, id: RateLimitsProfile['id']) {
@@ -534,12 +534,6 @@ export default (Vue as VueConstructor<Vue & {
     removeMapEntry(index: number) {
       this.localDoc.map.splice(index, 1)
       this.changeSelectedMapEntry(-1)
-    },
-
-    referToRateLimit() {
-      this.$emit('form-invalid', false)
-      const {href} = this.$router.resolve({path: `/config/${this.selectedBranch}/ratelimitprofiles`})
-      window.open(href, '_blank')
     },
 
     wafacllimitProfileNames() {

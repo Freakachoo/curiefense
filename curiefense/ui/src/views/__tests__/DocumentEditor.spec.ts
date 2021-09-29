@@ -26,6 +26,7 @@ describe('DocumentEditor.vue', () => {
   let flowControlPolicyDocs: FlowControlPolicy[]
   let wafDocs: WAFPolicy[]
   let rateLimitsDocs: RateLimit[]
+  const SECURITY_POLICIES_OPTION_INDEX = 5
   beforeEach((done) => {
     gitData = [
       {
@@ -963,7 +964,7 @@ describe('DocumentEditor.vue', () => {
         const branchSelection = wrapper.find('.branch-selection')
         expect((branchSelection.element as HTMLSelectElement).selectedIndex).toEqual(0)
         const docTypeSelection = wrapper.find('.doc-type-selection')
-        expect((docTypeSelection.element as HTMLSelectElement).selectedIndex).toEqual(4)
+        expect((docTypeSelection.element as HTMLSelectElement).selectedIndex).toEqual(SECURITY_POLICIES_OPTION_INDEX)
         const docSelection = wrapper.find('.doc-selection')
         expect((docSelection.element as HTMLSelectElement).selectedIndex).toEqual(0)
         done()
@@ -1299,7 +1300,7 @@ describe('DocumentEditor.vue', () => {
       const docTypeSelection = wrapper.find('.doc-type-selection')
       docTypeSelection.trigger('click')
       const options = docTypeSelection.findAll('option')
-      options.at(4).setSelected()
+      options.at(SECURITY_POLICIES_OPTION_INDEX).setSelected()
       // allow all requests to finish
       setImmediate(async () => {
         const doc = (wrapper.vm as any).selectedDoc
@@ -1343,7 +1344,7 @@ describe('DocumentEditor.vue', () => {
       const docTypeSelection = wrapper.find('.doc-type-selection')
       docTypeSelection.trigger('click')
       const options = docTypeSelection.findAll('option')
-      options.at(4).setSelected()
+      options.at(SECURITY_POLICIES_OPTION_INDEX).setSelected()
       // allow all requests to finish
       setImmediate(async () => {
         const originalDoc = (wrapper.vm as any).selectedDoc

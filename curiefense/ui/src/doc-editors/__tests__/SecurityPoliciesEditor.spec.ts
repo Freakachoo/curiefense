@@ -1,7 +1,7 @@
 import SecurityPoliciesEditor from '@/doc-editors/SecurityPoliciesEditor.vue'
 import {afterEach, beforeEach, describe, expect, jest, test} from '@jest/globals'
 import {shallowMount, Wrapper} from '@vue/test-utils'
-import {ACLProfile, RateLimit, SecurityPolicy, WAFPolicy} from '@/types'
+import {ACLProfile, RateLimit, RateLimitsProfile, SecurityPolicy, WAFPolicy} from '@/types'
 import axios from 'axios'
 import Vue from 'vue'
 import _ from 'lodash'
@@ -14,8 +14,8 @@ describe('SecurityPoliciesEditor.vue', () => {
   let wafDocs: WAFPolicy[]
   let rateLimitsDocs: RateLimit[]
   let wrapper: Wrapper<Vue>
-  let mockRouter
   let axiosGetSpy: any
+  let rateLimitProfiles: RateLimitsProfile[]
   beforeEach(() => {
     securityPoliciesDocs = [
       {
@@ -30,7 +30,7 @@ describe('SecurityPoliciesEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '__default__',
             'waf_active': false,
-            'limit_profile_ids': ['f971e92459e2'],
+            'limit_profile_ids': ['1'],
           },
           {
             'name': 'entry name',
@@ -39,7 +39,7 @@ describe('SecurityPoliciesEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '009e846e819e',
             'waf_active': false,
-            'limit_profile_ids': ['365757ec0689'],
+            'limit_profile_ids': ['2'],
           },
         ],
       },
@@ -55,7 +55,7 @@ describe('SecurityPoliciesEditor.vue', () => {
             'acl_active': false,
             'waf_profile': '__default__',
             'waf_active': false,
-            'limit_profile_ids': ['f971e92459e2', '365757ec0689'],
+            'limit_profile_ids': ['1', '2'],
           },
           {
             'name': 'entry name',
@@ -164,6 +164,20 @@ describe('SecurityPoliciesEditor.vue', () => {
         'pairwith': {'self': 'self'},
       },
     ]
+    rateLimitProfiles = [
+      {
+        id: '1',
+        name: 'test profile',
+        description: 'the testing',
+        limit_ids: rateLimitsDocs.map(({id}) => id),
+      },
+      {
+        id: '2',
+        name: 'test profile 2',
+        description: 'the testing 2',
+        limit_ids: [rateLimitsDocs[1].id],
+      },
+    ]
     axiosGetSpy = jest.spyOn(axios, 'get').mockImplementation((path, config) => {
       if (!wrapper) {
         return Promise.resolve({data: []})
@@ -196,18 +210,24 @@ describe('SecurityPoliciesEditor.vue', () => {
       if (path === `/conf/api/v2/configs/${branch}/d/ratelimits/e/f971e92459e2/`) {
         return Promise.resolve({data: rateLimitsDocs[0]})
       }
+      if (path === `/conf/api/v2/configs/${branch}/d/ratelimitprofiles/`) {
+        if (config && config.headers && config.headers['x-fields'] === 'id, name') {
+          return Promise.resolve({data: _.map(rateLimitProfiles, (i) => _.pick(i, 'id', 'name'))})
+        }
+        return Promise.resolve({data: rateLimitProfiles})
+      }
+      if (path === `/conf/api/v2/configs/${branch}/d/ratelimitprofiles/e/1`) {
+        return Promise.resolve({data: rateLimitProfiles[0]})
+      }
+      if (path === `/conf/api/v2/configs/${branch}/d/ratelimitprofiles/e/2`) {
+        return Promise.resolve({data: rateLimitProfiles[1]})
+      }
       return Promise.resolve({data: []})
     })
-    mockRouter = {
-      push: jest.fn(),
-    }
     wrapper = shallowMount(SecurityPoliciesEditor, {
       propsData: {
         selectedDoc: securityPoliciesDocs[0],
         selectedBranch: 'master',
-      },
-      mocks: {
-        $router: mockRouter,
       },
     })
   })
@@ -341,13 +361,9 @@ describe('SecurityPoliciesEditor.vue', () => {
       const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
       expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_profile_ids.length)
       const rateLimitName = entryRateLimitsRows.at(0).find('.rate-limit-name')
-      expect(rateLimitName.text()).toEqual(rateLimitsDocs[0].name)
+      expect(rateLimitName.text()).toEqual(rateLimitProfiles[0].name)
       const rateLimitDescription = entryRateLimitsRows.at(0).find('.rate-limit-description')
-      expect(rateLimitDescription.text()).toEqual(rateLimitsDocs[0].description)
-      const rateLimitThreshold = entryRateLimitsRows.at(0).find('.rate-limit-threshold')
-      expect(rateLimitThreshold.text()).toEqual(rateLimitsDocs[0].limit)
-      const rateLimitTTL = entryRateLimitsRows.at(0).find('.rate-limit-ttl')
-      expect(rateLimitTTL.text()).toEqual(rateLimitsDocs[0].ttl)
+      expect(rateLimitDescription.text()).toEqual(rateLimitProfiles[0].description)
     })
 
     test('should not have rate limit data displayed if no corresponding rate limit exists', async () => {
@@ -365,9 +381,9 @@ describe('SecurityPoliciesEditor.vue', () => {
       const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
       expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[1].map[0].limit_profile_ids.length - 1)
       const rateLimitName0 = entryRateLimitsRows.at(0).find('.rate-limit-name')
-      expect(rateLimitName0.text()).toEqual(rateLimitsDocs[0].name)
+      expect(rateLimitName0.text()).toEqual(rateLimitProfiles[0].name)
       const rateLimitName1 = entryRateLimitsRows.at(1).find('.rate-limit-name')
-      expect(rateLimitName1.text()).toEqual(rateLimitsDocs[1].name)
+      expect(rateLimitName1.text()).toEqual(rateLimitProfiles[1].name)
     })
 
     test('should open new rate limit row from add button', async () => {
@@ -413,8 +429,8 @@ describe('SecurityPoliciesEditor.vue', () => {
       await Vue.nextTick()
       const newRateLimitSelection = entryRateLimitsTable.find('.new-rate-limit-selection')
       const options = newRateLimitSelection.findAll('option')
-      expect(options.length).toEqual(rateLimitsDocs.length - securityPoliciesDocs[0].map[0].limit_profile_ids.length)
-      expect(options.at(0).text()).toEqual(`${rateLimitsDocs[1].name} ${rateLimitsDocs[1].description}`)
+      expect(options.length).toEqual(rateLimitProfiles.length - securityPoliciesDocs[0].map[0].limit_profile_ids.length)
+      expect(options.at(0).text()).toEqual(`${rateLimitProfiles[1].name} ${rateLimitProfiles[1].description}`)
     })
 
     test('should add selected rate limit from dropdown to table', async () => {
@@ -467,23 +483,6 @@ describe('SecurityPoliciesEditor.vue', () => {
       await wrapper.vm.$forceUpdate()
       const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
       expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[0].limit_profile_ids.length - 1)
-    })
-
-    test('should change route when create new rate limit is clicked', async () => {
-      const table = wrapper.find('.entries-table')
-      const entryRow = table.findAll('.entry-row').at(0)
-      entryRow.trigger('click')
-      await Vue.nextTick()
-      const currentEntryRow = table.findAll('.current-entry-row').at(0)
-      const entryRateLimitsTable = currentEntryRow.find('.current-entry-rate-limits-table')
-      const removeButton = entryRateLimitsTable.find('.rate-limit-remove-button')
-      removeButton.trigger('click')
-      await wrapper.vm.$forceUpdate()
-      const referralButton = entryRateLimitsTable.find('.rate-limit-referral-button')
-      await referralButton.trigger('click')
-      await Vue.nextTick()
-      expect(mockRouter.push).toHaveBeenCalledTimes(1)
-      expect(mockRouter.push).toHaveBeenCalledWith('/config/master/ratelimits')
     })
   })
 
@@ -857,13 +856,9 @@ describe('SecurityPoliciesEditor.vue', () => {
         const entryRateLimitsRows = entryRateLimitsTable.findAll('.rate-limit-row')
         expect(entryRateLimitsRows.length).toEqual(securityPoliciesDocs[0].map[1].limit_profile_ids.length)
         const rateLimitName = entryRateLimitsRows.at(0).find('.rate-limit-name')
-        expect(rateLimitName.text()).toEqual(rateLimitsDocs[1].name)
+        expect(rateLimitName.text()).toEqual(rateLimitProfiles[1].name)
         const rateLimitDescription = entryRateLimitsRows.at(0).find('.rate-limit-description')
-        expect(rateLimitDescription.text()).toEqual(rateLimitsDocs[1].description)
-        const rateLimitThreshold = entryRateLimitsRows.at(0).find('.rate-limit-threshold')
-        expect(rateLimitThreshold.text()).toEqual(rateLimitsDocs[1].limit)
-        const rateLimitTTL = entryRateLimitsRows.at(0).find('.rate-limit-ttl')
-        expect(rateLimitTTL.text()).toEqual(rateLimitsDocs[1].ttl)
+        expect(rateLimitDescription.text()).toEqual(rateLimitProfiles[1].description)
       })
 
       test('should revert old match data to be valid before forking if invalid', async () => {
