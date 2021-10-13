@@ -58,6 +58,18 @@ describe('RateLimitsProfilesEditor.vue', () => {
     })
   })
 
+  test('should not crush if getting ratelimits from server failed', () => {
+    jest.spyOn(axios, 'get').mockImplementation(() => Promise.resolve({data: undefined}))
+    wrapper = shallowMount(RateLimitsProfilesEditor, {
+      propsData: {
+        selectedDoc,
+        selectedBranch,
+      },
+    })
+    expect((wrapper.vm as any).rateLimits).toEqual([])
+    jest.clearAllMocks()
+  })
+
   test('should have an entries list table rendered', () => {
     const tables = wrapper.findAll('.entries-table')
     expect(tables.length).toEqual(1)
